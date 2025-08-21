@@ -1,0 +1,93 @@
+type CommandResponse {
+  "Response code"
+  code: Int
+  "Response message"
+  message: String
+}
+
+type GameMngGame {
+  "Game ID"
+  id: ID!
+  "name"
+  name: String!
+  "organization id"
+  organizationId: String!
+  "Game description"
+  description: String
+  "Game active flag"
+  active: Boolean!  
+  "object metadata"
+  metadata: GameMngGameMetadata
+}
+
+type GameMngGameMetadata {
+    createdBy: String
+		createdAt: BigInt
+		updatedBy: String
+		updatedAt: BigInt
+}
+
+type GameMngGameListing {
+  "Listing"
+  listing: [GameMngGame]
+  "query total result count"
+  queryTotalResultCount: Int,  
+}
+
+
+input GameMngGameFilterInput {
+  "Name"
+  name: String
+  "organization id"
+  organizationId: String!
+  "Game active flag"
+  active: Boolean
+}
+
+input GameMngGamePaginationInput {
+  "Page"
+  page: Int!
+  "Count"
+  count: Int!
+  "query total result count flag"
+  queryTotalResultCount: Boolean
+}
+
+input GameMngGameSortInput {
+  field: String!,
+  asc: Boolean!,
+}
+
+input GameMngGameInput {
+  "name"
+  name: String
+  "organization id"
+  organizationId: String!
+  "Game description"
+  description: String
+  "Game active flag"
+  active: Boolean
+}
+
+
+type Query {
+  "Get Games filtered "
+  GameMngGameListing(filterInput: GameMngGameFilterInput, paginationInput: GameMngGamePaginationInput, sortInput: GameMngGameSortInput): GameMngGameListing
+  "Get Game by its id"
+  GameMngGame(id: ID!, organizationId: String!): GameMngGame
+}
+
+type Mutation {
+  "Create a new Game"
+  GameMngCreateGame(input: GameMngGameInput!): GameMngGame
+  "Update an Game"
+  GameMngUpdateGame(id: ID!, input: GameMngGameInput!, merge: Boolean!): GameMngGame  
+  "Deletes an Game"
+  GameMngDeleteGames(ids: [ID]!): CommandResponse  
+}
+
+
+type Subscription {
+  "This events is triggered when a game updated or deleted"
+  GameMngGameModified(id: ID!): GameMngGame
+}

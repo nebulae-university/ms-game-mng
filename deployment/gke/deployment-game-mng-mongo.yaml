@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-mng-mongo
+spec:
+  ports:
+  - port: 27017
+    name: game-mng-mongo
+  selector:
+    app: game-mng-mongo
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: game-mng-mongo-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: standard-exp  
+---
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: game-mng-mongo
+spec:
+  selector:
+    matchLabels:
+      app: game-mng-mongo
+  strategy:
+    type: Recreate      
+  template:
+    metadata:
+      labels:
+        app: game-mng-mongo
+    spec:
+      containers:
+      - image: mongo:4
+        name: game-mng-mongo        
+        ports:
+        - containerPort: 27017
+          name: game-mng-mongo
+        volumeMounts:
+        - name: game-mng-mongo-persistent-storage
+          mountPath: /data/db
+        resources:
+          requests:
+            cpu: "50m"
+      volumes:
+      - name: game-mng-mongo-persistent-storage
+        persistentVolumeClaim:
+          claimName: game-mng-mongo-pv-claim      

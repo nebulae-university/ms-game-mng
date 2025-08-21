@@ -1,0 +1,53 @@
+export default {
+  navigation: {
+    'settings': 'Configuraciones',
+    'game-mng-game-management': 'Games',
+  },
+  games: {
+    games: 'Games',
+    search: 'Búsqueda rápida por nombre',
+    add_new_game: 'Agregar Nueva',
+    add_new_game_short: 'Agregar',
+    rows_per_page: 'Filas por página:',
+    of: 'de',
+    remove: 'Eliminar',
+    table_colums: {
+      name: 'Nombre',
+      active: 'Activo'
+    },
+    remove_dialog_title: "¿Desea eliminar las games seleccionadas?",
+    remove_dialog_description: "Esta acción no se puede deshacer",
+    remove_dialog_no: "No",
+    remove_dialog_yes: "Si",
+    filters: {
+      title: "Filtros",
+      active: "Activo"
+    }
+  },
+  game: {
+    games: 'Games',
+    game_detail: 'Detalle de la Game',
+    save: 'GUARDAR',
+    basic_info: 'Información Básica',
+    name: 'Nombre',
+    description: 'Descripción',
+    active: 'Activo',
+    metadata_tab: 'Metadatos',
+    metadata: {
+      createdBy: 'Creado por',
+      createdAt: 'Creado el',
+      updatedBy: 'Modificado por',
+      updatedAt: 'Modificado el',
+    },
+    not_found: 'Lo sentimos pero no pudimos encontrar la entidad que busca',
+    internal_server_error: 'Error Interno del Servidor',
+    update_success: 'Game ha sido actualizado',
+    create_success: 'Game ha sido creado',
+    form_validations: {
+      name: {
+        length: "El nombre debe tener al menos {len} caracteres",
+        required: "El nombre es requerido",
+      }
+    },
+  }
+};
