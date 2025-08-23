@@ -2,7 +2,7 @@ import { defer } from 'rxjs';
 import { mergeMap, map } from 'rxjs/operators';
 
 import graphqlService from '../../../../services/graphqlService';
-import { GameMngGameListing, GameMngDeleteGame } from '../../gql/Game';
+import { GameMngGameListing, GameMngDeleteGame, GameMngImportGames } from '../../gql/Game';
 
 export const SET_GAMES = '[GAME_MNG] SET GAMES';
 export const SET_GAMES_PAGE = '[GAME_MNG] SET GAMES PAGE';
@@ -54,6 +54,27 @@ export function removeGames(selectedForRemovalIds, { filters, order, page, rowsP
     const deleteArgs = { ids: selectedForRemovalIds };
     const listingArgs = getListingQueryArguments({ filters, order, page, rowsPerPage });
     return (dispatch) => defer(() => graphqlService.client.mutate(GameMngDeleteGame(deleteArgs))).pipe(
+        mergeMap(() => defer(() => graphqlService.client.query(GameMngGameListing(listingArgs)))),
+        map((result) =>
+            dispatch({
+                type: SET_GAMES,
+                payload: result.data.GameMngGameListing
+            })
+        )
+    ).toPromise();
+}
+
+
+/**
+ * Executes the mutation to remove the selected rows
+ * @param {*} selectedForRemovalIds 
+ * @param {*} param1 
+ */
+export function importGames({ filters, order, page, rowsPerPage }) {
+    const importArgs = { input :{limit: 50} };
+    //{ variables: { input: { ...form, organizationId: loggedUser.selectedOrganization.id } } }
+    const listingArgs = getListingQueryArguments({ filters, order, page, rowsPerPage });
+    return (dispatch) => defer(() => graphqlService.client.mutate(GameMngImportGames(importArgs))).pipe(
         mergeMap(() => defer(() => graphqlService.client.query(GameMngGameListing(listingArgs)))),
         map((result) =>
             dispatch({

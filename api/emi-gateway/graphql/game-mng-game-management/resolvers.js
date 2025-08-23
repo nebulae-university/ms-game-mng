@@ -84,6 +84,9 @@ module.exports = {
         GameMngCreateGame(root, args, context) {
             return sendToBackEndHandler$(root, args, context, WRITE_ROLES, 'mutation', 'Game', 'GameMngCreateGame').toPromise();
         },
+        GameMngImportGames(root, args, context) {
+            return sendToBackEndHandler$(root, args, context, WRITE_ROLES, 'mutation', 'Game', 'GameMngImportGames').toPromise();
+        },
         GameMngUpdateGame(root, args, context) {
             return sendToBackEndHandler$(root, args, context, WRITE_ROLES, 'mutation', 'Game', 'GameMngUpdateGame').toPromise();
         },

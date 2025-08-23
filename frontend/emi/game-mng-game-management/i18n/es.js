@@ -6,8 +6,10 @@ export default {
   games: {
     games: 'Games',
     search: 'Búsqueda rápida por nombre',
-    add_new_game: 'Agregar Nueva',
-    add_new_game_short: 'Agregar',
+    add_new_game: 'Agregar',
+    add_new_game_short: '+',
+    import_game: 'Importar',
+    import_game_short: 'Importar',
     rows_per_page: 'Filas por página:',
     of: 'de',
     remove: 'Eliminar',

@@ -2,22 +2,25 @@
 
 const uuidv4 = require("uuid/v4");
 const { of, forkJoin, from, iif, throwError } = require("rxjs");
-const { mergeMap, catchError, map, toArray, pluck } = require('rxjs/operators');
+const { mergeMap, catchError, map, toArray, pluck, tap, last } = require('rxjs/operators');
 
 const Event = require("@nebulae/event-store").Event;
-const { CqrsResponseHelper } = require('@nebulae/backend-node-tools').cqrs;
+const { CqrsResponseHelper } = require('@nebulae/backend-node-tools').cqrs;;
 const { ConsoleLogger } = require('@nebulae/backend-node-tools').log;
 const { CustomError, INTERNAL_SERVER_ERROR_CODE, PERMISSION_DENIED } = require("@nebulae/backend-node-tools").error;
 const { brokerFactory } = require("@nebulae/backend-node-tools").broker;
 
 const broker = brokerFactory();
 const eventSourcing = require("../../tools/event-sourcing").eventSourcing;
+const FeedParser = require("../../tools/feed-parser").FeedParser;
 const GameDA = require("./data-access/GameDA");
 
 const READ_ROLES = ["GAME_READ"];
 const WRITE_ROLES = ["GAME_WRITE"];
 const REQUIRED_ATTRIBUTES = [];
 const MATERIALIZED_VIEW_TOPIC = "emi-gateway-materialized-view-updates";
+
+const GAME_FEED_URL = process.env.GAME_FEED_URL || 'https://www.freetogame.com/api/games';
 
 /**
  * Singleton instance
@@ -43,6 +46,7 @@ class GameCRUD {
         "emigateway.graphql.query.GameMngGameListing": { fn: instance.getGameMngGameListing$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.query.GameMngGame": { fn: instance.getGame$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngCreateGame": { fn: instance.createGame$, instance, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
+        "emigateway.graphql.mutation.GameMngImportGames": { fn: instance.importGames$, instance, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngUpdateGame": { fn: instance.updateGame$, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngDeleteGames": { fn: instance.deleteGames$, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
       }
@@ -103,6 +107,34 @@ class GameCRUD {
       map(([sucessResponse]) => sucessResponse),
       catchError(err => iif(() => err.name === 'MongoTimeoutError', throwError(err), CqrsResponseHelper.handleError$(err)))
     )
+  }
+
+
+  /**
+  * imports multiple games
+  */
+  importGames$({ root, args, jwt }, authToken) {
+
+
+    ConsoleLogger.i(`Importing games with args: ${JSON.stringify(args)}`);
+
+    return FeedParser.parseFeed$(GAME_FEED_URL).pipe(
+
+      //tap(game => ConsoleLogger.i(`Parsed item: ${JSON.stringify(game,null,1)}`)),
+
+      map(({title: name,short_description: description }) => ({ id: uuidv4(), name, description, active: true, organizationId: authToken.organizationId })),
+      mergeMap(game => GameDA.createGame$(game.id, game, authToken.preferred_username)),
+      mergeMap(game => eventSourcing.emitEvent$(instance.buildAggregateMofifiedEvent('CREATE', 'Game', game.id, authToken, game), { autoAcknowledgeKey: process.env.MICROBACKEND_KEY })),
+      toArray(),
+      map((array)=> ({code: array.length, message:'ok'})),
+      mergeMap(aggregate => forkJoin(
+        CqrsResponseHelper.buildSuccessResponse$(aggregate),
+      )),
+      map(([sucessResponse]) => sucessResponse),
+      catchError(err => iif(() => err.name === 'MongoTimeoutError', throwError(err), CqrsResponseHelper.handleError$(err)))
+    );
+
+
   }
 
   /**

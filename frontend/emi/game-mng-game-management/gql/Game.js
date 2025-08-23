@@ -38,6 +38,17 @@ export const GameMngCreateGame = (variables) => ({
     variables
 })
 
+
+export const GameMngImportGames = (variables) => ({
+    mutation: gql`
+            mutation  GameMngImportGames($input: GameMngGameImportInput!){
+                GameMngImportGames(input: $input){
+                    code,message
+                }
+            }`,
+    variables
+})
+
 export const GameMngDeleteGame = (variables) => ({
     mutation: gql`
             mutation GameMngGameListing($ids: [ID]!){

@@ -13,6 +13,7 @@ import { debounceTime } from "rxjs/operators";
 
 function GamesHeader(props) {
     const dispatch = useDispatch();
+    const { filters, rowsPerPage, page, order, totalDataCount } = useSelector(({ GameManagement }) => GameManagement.games);
     const user = useSelector(({ auth }) => auth.user);
     const mainTheme = useSelector(({ fuse }) => fuse.settings.mainTheme);
     const searchTextFilter = useSelector(({ GameManagement }) => GameManagement.games.filters.name);
@@ -31,6 +32,10 @@ function GamesHeader(props) {
         if (keyword !== undefined && keyword !== null)
             dispatch(Actions.setGamesFilterName(keyword))
     }, [keyword]);
+
+    function handleRequestImportGames(event, property) {
+        dispatch(Actions.importGames({ filters, order, page, rowsPerPage }));
+    }
 
     return (
         <div className="flex flex-1 w-full items-center justify-between">
@@ -81,6 +86,12 @@ function GamesHeader(props) {
                 <Button component={Link} to="/game-mng/games/new" className="whitespace-no-wrap" variant="contained">
                     <span className="hidden sm:flex">{T.translate("games.add_new_game")}</span>
                     <span className="flex sm:hidden">{T.translate("games.add_new_game_short")}</span>
+                </Button>
+            </FuseAnimate>
+            <FuseAnimate animation="transition.slideRightIn" delay={300}>
+                <Button component={Link} onClick={handleRequestImportGames} className="whitespace-no-wrap" variant="contained">
+                    <span className="hidden sm:flex">{T.translate("games.import_game")}</span>
+                    <span className="flex sm:hidden">{T.translate("games.import_game_short")}</span>
                 </Button>
             </FuseAnimate>
         </div>

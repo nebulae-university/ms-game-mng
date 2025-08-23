@@ -69,6 +69,9 @@ input GameMngGameInput {
   active: Boolean
 }
 
+input GameMngGameImportInput {
+  limit: Int
+}
 
 type Query {
   "Get Games filtered "
@@ -80,6 +83,8 @@ type Query {
 type Mutation {
   "Create a new Game"
   GameMngCreateGame(input: GameMngGameInput!): GameMngGame
+  "Import Games"
+  GameMngImportGames(input: GameMngGameImportInput!): CommandResponse
   "Update an Game"
   GameMngUpdateGame(id: ID!, input: GameMngGameInput!, merge: Boolean!): GameMngGame  
   "Deletes an Game"

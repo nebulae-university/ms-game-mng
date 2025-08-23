@@ -8,6 +8,8 @@ export default {
     search: 'Quick search by name',
     add_new_game: 'ADD NEW',
     add_new_game_short: 'NEW',
+    import_game: 'IMPORT',
+    import_game_short: 'IMPORT',
     rows_per_page: 'Rows per page:',
     of: 'of',
     remove: 'Remove',
