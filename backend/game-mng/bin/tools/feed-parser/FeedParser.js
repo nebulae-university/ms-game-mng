@@ -12,6 +12,11 @@ class FeedParserClass {
         );
     }
 
+    static getGameDetailById$(id) {
+        const url = `https://www.freetogame.com/api/game?id=${id}`;
+        return fetch(url).then(res => res.json());
+    }
+
     static parseFeed$(feed) {
         // This function is no longer needed, but we will keep it for compatibility
         // and delegate to the new getGames$ function.

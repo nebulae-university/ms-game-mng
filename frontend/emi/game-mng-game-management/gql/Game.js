@@ -14,6 +14,23 @@ export const GameMngGameListing = (variables) => ({
     fetchPolicy: 'network-only',
 })
 
+export const GameMngGameDetails = (variables) => ({
+    query: gql`
+            query GameMngGameDetails($id: ID!, $organizationId: String!){
+                GameMngGameDetails(id:$id, organizationId:$organizationId){
+                    id,title,thumbnail,status,shortDescription,description,gameUrl,genre,platform,publisher,developer,releaseDate,freetogameProfileUrl,
+                    minimumSystemRequirements{
+                        os,processor,memory,graphics,storage
+                    },
+                    screenshots{
+                        id,image
+                    }
+                }
+            }`,
+    variables,
+    fetchPolicy: 'network-only',
+})
+
 export const GameMngGame = (variables) => ({
     query: gql`
             query GameMngGame($id: ID!, $organizationId: String!){

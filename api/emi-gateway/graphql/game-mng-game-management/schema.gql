@@ -20,6 +20,37 @@ type GameMngGame {
   metadata: GameMngGameMetadata
 }
 
+type GameMngGameDetails {
+  id: Int!
+  title: String!
+  thumbnail: String
+  status: String
+  shortDescription: String
+  description: String
+  gameUrl: String
+  genre: String
+  platform: String
+  publisher: String
+  developer: String
+  releaseDate: String
+  freetogameProfileUrl: String
+  minimumSystemRequirements: MinimumSystemRequirements
+  screenshots: [Screenshot!]
+}
+
+type MinimumSystemRequirements {
+  os: String
+  processor: String
+  memory: String
+  graphics: String
+  storage: String
+}
+
+type Screenshot {
+  id: Int!
+  image: String!
+}
+
 type GameMngGameMetadata {
     createdBy: String
 		createdAt: BigInt
@@ -78,6 +109,8 @@ type Query {
   GameMngGameListing(filterInput: GameMngGameFilterInput, paginationInput: GameMngGamePaginationInput, sortInput: GameMngGameSortInput): GameMngGameListing
   "Get Game by its id"
   GameMngGame(id: ID!, organizationId: String!): GameMngGame
+  "Get Game by its id"
+  GameMngGameDetails(id: ID!, organizationId: String!): GameMngGameDetails
 }
 
 type Mutation {

@@ -45,6 +45,7 @@ class GameCRUD {
       'Game': {
         "emigateway.graphql.query.GameMngGameListing": { fn: instance.getGameMngGameListing$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.query.GameMngGame": { fn: instance.getGame$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
+        "emigateway.graphql.query.GameMngGameDetails": { fn: instance.getGameDetails$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngCreateGame": { fn: instance.createGame$, instance, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngImportGames": { fn: instance.importGames$, instance, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngUpdateGame": { fn: instance.updateGame$, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
@@ -87,6 +88,13 @@ class GameCRUD {
 
   }
 
+  getGameDetails$({ args }, authToken) {
+    const { id, organizationId } = args;
+    return from(FeedParser.getGameDetailById$(id)).pipe(
+      mergeMap(rawResponse => CqrsResponseHelper.buildSuccessResponse$(rawResponse)),
+      catchError(err => iif(() => err.name === 'MongoTimeoutError', throwError(err), CqrsResponseHelper.handleError$(err)))
+    );
+  }
 
   /**
   * Create a Game
@@ -122,7 +130,7 @@ class GameCRUD {
 
       //tap(game => ConsoleLogger.i(`Parsed item: ${JSON.stringify(game,null,1)}`)),
 
-      map(({title: name,short_description: description }) => ({ id: uuidv4(), name, description, active: true, organizationId: authToken.organizationId })),
+      map(({id, title: name,short_description: description }) => ({ id: String(id), name, description, active: true, organizationId: authToken.organizationId })),
       mergeMap(game => GameDA.createGame$(game.id, game, authToken.preferred_username)),
       mergeMap(game => eventSourcing.emitEvent$(instance.buildAggregateMofifiedEvent('CREATE', 'Game', game.id, authToken, game), { autoAcknowledgeKey: process.env.MICROBACKEND_KEY })),
       toArray(),

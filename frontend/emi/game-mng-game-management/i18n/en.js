@@ -30,6 +30,7 @@ export default {
     games: 'Games',
     game_detail: 'Game detail',
     save: 'SAVE',
+    queryDetails: 'QUERY DETAILS',
     basic_info: 'Basic Info',
     name: 'Name',
     description: 'Description',

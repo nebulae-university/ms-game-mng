@@ -76,6 +76,9 @@ module.exports = {
         },
         GameMngGame(root, args, context) {
             return sendToBackEndHandler$(root, args, context, READ_ROLES, 'query', 'Game', 'GameMngGame').toPromise();
+        },
+        GameMngGameDetails(root, args, context) {
+            return sendToBackEndHandler$(root, args, context, READ_ROLES, 'query', 'Game', 'GameMngGameDetails').toPromise();
         }
     },
 

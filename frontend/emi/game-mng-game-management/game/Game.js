@@ -27,7 +27,8 @@ import {
     onGameMngGameModified,
     GameMngGame,
     GameMngCreateGame,
-    GameMngUpdateGame
+    GameMngUpdateGame,
+    GameMngGameDetails
 } from "../gql/Game";
 import Metadata from './tabs/Metadata';
 import { BasicInfo, basicInfoFormValidationsGenerator } from './tabs/BasicInfo';
@@ -52,7 +53,9 @@ function Game(props) {
     // Game STATE and CRUD ops
     const [game, setGame] = useState();
     const gqlGame = GameMngGame({ id: props.match.params.gameId });
+    const gqlGameDetails = GameMngGameDetails({ id: props.match.params.gameId });
     const [readGame, readGameResult] = useLazyQuery(gqlGame.query, { fetchPolicy: gqlGame.fetchPolicy })
+    const [readGameDetails, readGameDetailsResult] = useLazyQuery(gqlGameDetails.query, { fetchPolicy: gqlGameDetails.fetchPolicy })
     const [createGame, createGameResult] = useMutation(GameMngCreateGame({}).mutation);
     const [updateGame, updateGameResult] = useMutation(GameMngUpdateGame({}).mutation);
     const onGameModifiedResult = useSubscription(...onGameMngGameModified({ id: props.match.params.gameId }));
@@ -192,6 +195,10 @@ function Game(props) {
         }
     }
 
+    function queryGameMngGameDetails() {
+        readGameDetails({ variables: { organizationId: loggedUser.selectedOrganization.id, id: form.id } });
+    }
+
     /*
     *  ====== ALTERNATIVE PAGES TO RENDER ========
     */
@@ -207,7 +214,7 @@ function Game(props) {
     }
 
     // Shows the Loading bar if we are waiting for something mandatory
-    if (!loggedUser.selectedOrganization || readGameResult.loading) {
+    if (!loggedUser.selectedOrganization || readGameResult.loading)  {
         return (<FuseLoading />);
     }
 
@@ -267,6 +274,15 @@ function Game(props) {
                                 {T.translate("game.save")}
                             </Button>
                         </FuseAnimate>
+                        <FuseAnimate animation="transition.slideRightIn" delay={300}>
+                            <Button
+                                className="whitespace-no-wrap"
+                                variant="contained"
+                                onClick={queryGameMngGameDetails}
+                            >
+                                {T.translate("game.queryDetails")}
+                            </Button>
+                        </FuseAnimate>
                     </div>
                 )
             }
@@ -319,7 +335,7 @@ function Game(props) {
 
                                 return (
                                     <form noValidate onSubmit={handleSubmit}>
-                                        {tabValue === 0 && <BasicInfo dataSource={values} {...{ T, onChange, canWrite, errors, touched }} />}
+                                        {tabValue === 0 && <BasicInfo dataSource={values} {...{ T, onChange, canWrite, errors, touched, readGameDetailsResult }} />}
                                         {tabValue === 1 && <Metadata dataSource={values} T={T} />}
                                     </form>
                                 );

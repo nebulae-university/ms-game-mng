@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { TextField, FormControlLabel, Switch } from '@material-ui/core';
+import GameDetail from './GameDetail'
 import * as Yup from "yup";
 import _ from '@lodash';
 
@@ -19,7 +20,7 @@ export function basicInfoFormValidationsGenerator(T) {
  * @param {{dataSource,T}} props 
  */
 export function BasicInfo(props) {
-    const { dataSource: form, T, onChange, errors, touched, canWrite } = props;
+    const { dataSource: form, T, onChange, errors, touched, canWrite, readGameDetailsResult } = props;
     return (
 
         <div>
@@ -77,6 +78,8 @@ export function BasicInfo(props) {
                 }
                 label={T.translate("game.active")}
             />
+
+            {readGameDetailsResult.called && <GameDetail readGameDetailsResult={readGameDetailsResult} />}
         </div>
     );
 }
