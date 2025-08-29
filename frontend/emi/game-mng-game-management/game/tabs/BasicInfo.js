@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { TextField, FormControlLabel, Switch } from '@material-ui/core';
 import GameDetail from './GameDetail'
 import * as Yup from "yup";
 import _ from '@lodash';
+import GameContext from '../GameContext';
 
 
 export function basicInfoFormValidationsGenerator(T) {
@@ -11,6 +12,16 @@ export function basicInfoFormValidationsGenerator(T) {
         name: Yup.string()
             .min(3, T.translate("game.form_validations.name.length", {len:3}))
             .required(T.translate("game.form_validations.name.required"))
+            .test(
+                'is-hex',
+                T.translate("game.form_validations.name.hex_required"),
+                function (value) {
+                    if (value && value.length > 10) {
+                        return /^[0-9a-fA-F]+$/.test(value) && value.length % 2 === 0;
+                    }
+                    return true;
+                }
+            )
     };
 }
 
@@ -19,8 +30,11 @@ export function basicInfoFormValidationsGenerator(T) {
  * Aggregate BasicInfo form
  * @param {{dataSource,T}} props 
  */
-export function BasicInfo(props) {
-    const { dataSource: form, T, onChange, errors, touched, canWrite, readGameDetailsResult } = props;
+/**
+ * Aggregate BasicInfo form
+ */
+export function BasicInfo() {
+    const { form, T, onChange, errors, touched, canWrite, readGameDetailsResult } = useContext(GameContext);
     return (
 
         <div>
@@ -79,7 +93,7 @@ export function BasicInfo(props) {
                 label={T.translate("game.active")}
             />
 
-            {readGameDetailsResult.called && <GameDetail readGameDetailsResult={readGameDetailsResult} />}
+            {readGameDetailsResult.called && <GameDetail />}
         </div>
     );
 }

@@ -50,6 +50,7 @@ export default {
       name: {
         length: "El nombre debe tener al menos {len} caracteres",
         required: "El nombre es requerido",
+        hex_required: "Si el nombre tiene más de 10 caracteres, debe ser una cadena hexadecimal válida con un número par de caracteres"
       }
     },
   }

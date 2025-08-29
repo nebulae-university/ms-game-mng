@@ -50,6 +50,7 @@ export default {
       name: {
         length: "Name must be at least {len} characters",
         required: "Name is required",
+        hex_required: "If name is longer than 10 characters, it must be a valid hex string with an even number of characters"
       }
     },
   }

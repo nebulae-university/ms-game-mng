@@ -32,7 +32,7 @@ import {
 } from "../gql/Game";
 import Metadata from './tabs/Metadata';
 import { BasicInfo, basicInfoFormValidationsGenerator } from './tabs/BasicInfo';
-
+import GameContext from './GameContext';
 
 /**
  * Default Aggregate data when creating 
@@ -334,10 +334,20 @@ function Game(props) {
                                 };
 
                                 return (
-                                    <form noValidate onSubmit={handleSubmit}>
-                                        {tabValue === 0 && <BasicInfo dataSource={values} {...{ T, onChange, canWrite, errors, touched, readGameDetailsResult }} />}
-                                        {tabValue === 1 && <Metadata dataSource={values} T={T} />}
-                                    </form>
+                                    <GameContext.Provider value={{
+                                        form: values,
+                                        T,
+                                        onChange,
+                                        canWrite,
+                                        errors,
+                                        touched,
+                                        readGameDetailsResult
+                                    }}>
+                                        <form noValidate onSubmit={handleSubmit}>
+                                            {tabValue === 0 && <BasicInfo />}
+                                            {tabValue === 1 && <Metadata />}
+                                        </form>
+                                    </GameContext.Provider>
                                 );
                             }}
                         </Formik>

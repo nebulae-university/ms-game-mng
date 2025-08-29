@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import { FuseLoading } from '@fuse';
+import GameContext from '../GameContext';
 
 const useStyles = makeStyles({
     root: {
@@ -22,8 +23,8 @@ const useStyles = makeStyles({
     },
 });
 
-export default function GameDetail(props) {
-    const { readGameDetailsResult } = props;
+export default function GameDetail() {
+    const { readGameDetailsResult } = useContext(GameContext);
 
     const [gameDetail, setGameDetail] = useState(null);
 
