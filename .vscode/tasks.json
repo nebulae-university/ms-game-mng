@@ -1,0 +1,60 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "EMI",
+            "type": "shell",
+            "command": ". ~/.nvm/nvm.sh && cd playground/emi && nvm use 12 && yarn run dev",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "close": false
+            }
+        },
+        {
+            "label": "EMI-GATEWAY",
+            "type": "shell",
+            "command": "sleep 30 && . ~/.nvm/nvm.sh && cd playground/emi-gateway && nvm use 10 && npm run dev",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "close": false
+            }
+        },
+        {
+            "label": "BE: game-mng",
+            "type": "shell",
+            "command": "sleep 30 && . ~/.nvm/nvm.sh && cd backend/game-mng && nvm use 22 && nodemon bin/entry-point/server.js",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "close": false
+            }
+        },
+        {
+            "label": "Infraestructure",
+            "type": "shell",
+            "command": "cd playground && docker-compose up",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "close": false
+            }
+        },
+        {
+            "label": "Start All Services",
+            "dependsOn": [
+                "Infraestructure",
+                "EMI",
+                "EMI-GATEWAY",
+                "BE: game-mng"
+            ],
+            "dependsOrder": "parallel",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}
