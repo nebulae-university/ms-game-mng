@@ -20,7 +20,7 @@ const WRITE_ROLES = ["GAME_WRITE"];
 const REQUIRED_ATTRIBUTES = [];
 const MATERIALIZED_VIEW_TOPIC = "emi-gateway-materialized-view-updates";
 
-const GAME_FEED_URL = process.env.GAME_FEED_URL || 'https://www.freetogame.com/api/games';
+const GAME_FEED_URL = process.env.GAME_FEED_URL || 'https://www.freetogame.com/api/game';
 
 /**
  * Singleton instance
