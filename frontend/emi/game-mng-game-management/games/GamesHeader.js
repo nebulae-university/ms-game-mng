@@ -9,11 +9,12 @@ import { MDText } from 'i18n-react';
 import i18n from "../i18n";
 import _ from '@lodash';
 import { useEventCallback } from 'rxjs-hooks'
-import { debounceTime } from "rxjs/operators";
+import { debounceTime } from "rxjs/operators";  
+import GamesStatsModal from './GamesStatsModal';
 
 function GamesHeader(props) {
     const dispatch = useDispatch();
-    const { filters, rowsPerPage, page, order, totalDataCount } = useSelector(({ GameManagement }) => GameManagement.games);
+    const { filters, rowsPerPage, page, order, totalDataCount, totalGames, averageMetascore, gamesByGenre } = useSelector(({ GameManagement }) => GameManagement.games);
     const user = useSelector(({ auth }) => auth.user);
     const mainTheme = useSelector(({ fuse }) => fuse.settings.mainTheme);
     const searchTextFilter = useSelector(({ GameManagement }) => GameManagement.games.filters.name);
@@ -21,6 +22,7 @@ function GamesHeader(props) {
     const [keywordCallBack, keyword] = useEventCallback(
         (event$) => event$.pipe(debounceTime(500))
     )
+    const [open, setOpen] = React.useState(false);
 
     const T = new MDText(i18n.get(user.locale));
 
@@ -32,6 +34,23 @@ function GamesHeader(props) {
         if (keyword !== undefined && keyword !== null)
             dispatch(Actions.setGamesFilterName(keyword))
     }, [keyword]);
+
+    function handleRequestImportGames(event, property) {
+        dispatch(Actions.importGames({ filters, order, page, rowsPerPage }));
+    }
+
+    function handleRequestGameStatistics(event, property) {
+        dispatch(Actions.getGameStatistics({ filters }));
+    }
+
+    useEffect(() => {
+        if (gamesByGenre != null){
+            console.log("Games by genre updated:", gamesByGenre);
+            setOpen(true);
+        }        
+    }, [gamesByGenre]);
+    
+
 
     function handleRequestImportGames(event, property) {
         dispatch(Actions.importGames({ filters, order, page, rowsPerPage }));
@@ -94,6 +113,15 @@ function GamesHeader(props) {
                     <span className="flex sm:hidden">{T.translate("games.import_game_short")}</span>
                 </Button>
             </FuseAnimate>
+            <FuseAnimate animation="transition.slideRightIn" delay={300}>
+                <Button component={Link} onClick={handleRequestGameStatistics} className="whitespace-no-wrap" variant="contained">
+                    <span className="hidden sm:flex">{T.translate("games.game_stats")}</span>
+                    <span className="flex sm:hidden">{T.translate("games.game_stats_short")}</span>
+                </Button>
+            </FuseAnimate>
+
+
+            <GamesStatsModal open={open} setOpen={setOpen} totalGames={totalGames} averageMetascore={averageMetascore} gamesByGenre={gamesByGenre} />
         </div>
     );
 }

@@ -2,10 +2,11 @@ import { defer } from 'rxjs';
 import { mergeMap, map } from 'rxjs/operators';
 
 import graphqlService from '../../../../services/graphqlService';
-import { GameMngGameListing, GameMngDeleteGame, GameMngImportGames } from '../../gql/Game';
+import { GameMngGameListing, GameMngDeleteGame, GameMngImportGames, GameMngGameStatistics } from '../../gql/Game';
 
 export const SET_GAMES = '[GAME_MNG] SET GAMES';
 export const SET_GAMES_PAGE = '[GAME_MNG] SET GAMES PAGE';
+export const SET_STATS = '[GAME_MNG] SET GAMES STATS';
 export const SET_GAMES_ROWS_PER_PAGE = '[GAME_MNG] SET GAMES ROWS PER PAGE';
 export const SET_GAMES_ORDER = '[GAME_MNG] SET GAMES ORDER';
 export const SET_GAMES_FILTERS_ORGANIZATION_ID = '[GAME_MNG] SET GAMES FILTERS ORGANIZATION_ID';
@@ -19,9 +20,14 @@ export const SET_GAMES_FILTERS_ACTIVE = '[GAME_MNG] SET GAMES FILTERS ACTIVE';
 function getListingQueryArguments({ filters: { name, organizationId, active }, order, page, rowsPerPage }) {
     const args = {
         "filterInput": { organizationId },
-        "paginationInput": { "page": page, "count": rowsPerPage, "queryTotalResultCount": (page === 0) },
-        "sortInput": order.id ? { "field": order.id, "asc": order.direction === "asc" } : undefined
+        
     };
+    if(order != null && order.id != null){
+        args.sortInput = order.id ? { "field": order.id, "asc": order.direction === "asc" } : undefined
+    }
+    if(page != null && rowsPerPage != null){
+        args.paginationInput = { "page": page, "count": rowsPerPage, "queryTotalResultCount": (page === 0) };
+    }
     if (name.trim().length > 0) {
         args.filterInput.name = name;
     }
@@ -41,6 +47,21 @@ export function getGames({ filters, order, page, rowsPerPage }) {
         return dispatch({
             type: SET_GAMES,
             payload: result.data.GameMngGameListing
+        });
+    })
+}
+
+
+/**
+ * Queries the Game Listing based on selected filters, page and order
+ * @param {{ filters, order, page, rowsPerPage }} queryParams
+ */
+export function getGameStatistics({ filters }) {
+    const args = getListingQueryArguments({ filters });    
+    return (dispatch) => graphqlService.client.query(GameMngGameStatistics(args)).then(result => {
+        return dispatch({
+            type: SET_STATS,
+            payload: result.data.GameMngGameStatistics
         });
     })
 }

@@ -10,6 +10,8 @@ export default {
     add_new_game_short: 'NEW',
     import_game: 'IMPORT',
     import_game_short: 'IMPORT',
+    game_stats: 'Game Statistics',
+    game_stats_short: 'Stats',
     rows_per_page: 'Rows per page:',
     of: 'of',
     remove: 'Remove',

@@ -27,6 +27,16 @@ const gamesReducer = function (state = initialState, action) {
                     totalDataCount: queryTotalResultCount ? queryTotalResultCount : state.totalDataCount,
                 };
             }
+        case Actions.SET_STATS:
+            {
+                const { totalGames, averageMetascore, gamesByGenre } = action.payload;
+                return {
+                    ...state,
+                    totalGames,
+                    averageMetascore,
+                    gamesByGenre
+                };
+            }
         case Actions.SET_GAMES_PAGE:
             {
                 return {

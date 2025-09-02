@@ -14,6 +14,17 @@ export const GameMngGameListing = (variables) => ({
     fetchPolicy: 'network-only',
 })
 
+export const GameMngGameStatistics = (variables) => ({
+    query: gql`
+            query GameMngGameStatistics($filterInput:GameMngGameFilterInput){
+                GameMngGameStatistics(filterInput:$filterInput){
+                    totalGames, averageMetascore, gamesByGenre
+                }
+            }`,
+    variables,
+    fetchPolicy: 'network-only',
+})
+
 export const GameMngGameDetails = (variables) => ({
     query: gql`
             query GameMngGameDetails($id: ID!, $organizationId: String!){

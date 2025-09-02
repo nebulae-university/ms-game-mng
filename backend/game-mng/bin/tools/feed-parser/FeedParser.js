@@ -11,7 +11,7 @@ class FeedParserClass {
 
     static getGames$(feed) {
         return range(0, 1000).pipe(
-            bufferCount(10),
+            bufferCount(100),
             tap(ids => {
                 console.log(`Fetching games for IDs: ${ids.join(", ")}`);
             }),
@@ -51,7 +51,7 @@ class FeedParserClass {
 
 
     static fetchGameDetailById$(feed, id) {
-        const timeout$ = timer(300).pipe(
+        const timeout$ = timer(500).pipe(
             tap(() => {
                 throw new CustomError(
                     'GameFetchingTimeout',

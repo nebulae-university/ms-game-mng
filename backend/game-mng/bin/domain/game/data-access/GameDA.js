@@ -59,7 +59,7 @@ class GameDA {
     const collection = mongoDB.db.collection(CollectionName);
     const { page = 0, count = 10 } = pagination;
 
-    const query = this.generateListingQuery(filter);    
+    const query = this.generateListingQuery(filter);
     const projection = { name: 1, active: 1 };
 
     let cursor = collection
@@ -81,9 +81,20 @@ class GameDA {
     );
   }
 
+  static getGamesToCalcStats$(filter = {}) {
+    const collection = mongoDB.db.collection(CollectionName);
+
+    const query = this.generateListingQuery(filter);
+    const projection = {};
+    let cursor = collection
+      .find(query, { projection })
+
+    return mongoDB.extractAllFromMongoCursor$(cursor);
+  }
+
   static getGameSize$(filter = {}) {
     const collection = mongoDB.db.collection(CollectionName);
-    const query = this.generateListingQuery(filter);    
+    const query = this.generateListingQuery(filter);
     return defer(() => collection.countDocuments(query));
   }
 
@@ -96,11 +107,17 @@ class GameDA {
 
     const metadata = { createdBy, createdAt: Date.now(), updatedBy: createdBy, updatedAt: Date.now() };
     const collection = mongoDB.db.collection(CollectionName);
-    return defer(() => collection.insertOne({
+    return defer(() => collection.updateOne({
       _id,
-      ...properties,
-      metadata,
-    })).pipe(
+    }, {
+      $set: {
+        ...properties,
+        metadata
+      }
+    }, {
+      upsert: true
+    }
+    )).pipe(
       map(({ insertedId }) => ({ id: insertedId, ...properties, metadata }))
     );
   }

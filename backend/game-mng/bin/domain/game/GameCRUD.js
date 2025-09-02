@@ -2,7 +2,7 @@
 
 const uuidv4 = require("uuid/v4");
 const { of, forkJoin, from, iif, throwError } = require("rxjs");
-const { mergeMap, catchError, map, toArray, pluck, tap, last } = require('rxjs/operators');
+const { mergeMap, catchError, map, toArray, pluck, tap, last, reduce } = require('rxjs/operators');
 
 const Event = require("@nebulae/event-store").Event;
 const { CqrsResponseHelper } = require('@nebulae/backend-node-tools').cqrs;;
@@ -46,6 +46,7 @@ class GameCRUD {
         "emigateway.graphql.query.GameMngGameListing": { fn: instance.getGameMngGameListing$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.query.GameMngGame": { fn: instance.getGame$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.query.GameMngGameDetails": { fn: instance.getGameDetails$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
+        "emigateway.graphql.query.GameMngGameStatistics": { fn: instance.getGameStatistics$, instance, jwtValidation: { roles: READ_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngCreateGame": { fn: instance.createGame$, instance, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngImportGames": { fn: instance.importGames$, instance, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
         "emigateway.graphql.mutation.GameMngUpdateGame": { fn: instance.updateGame$, jwtValidation: { roles: WRITE_ROLES, attributes: REQUIRED_ATTRIBUTES } },
@@ -69,6 +70,40 @@ class GameCRUD {
       queryTotalResultCount ? GameDA.getGameSize$(filterInput) : of(undefined),
     ).pipe(
       map(([listing, queryTotalResultCount]) => ({ listing, queryTotalResultCount })),
+      mergeMap(rawResponse => CqrsResponseHelper.buildSuccessResponse$(rawResponse)),
+      catchError(err => iif(() => err.name === 'MongoTimeoutError', throwError(err), CqrsResponseHelper.handleError$(err)))
+    );
+  }
+
+
+  /**  
+   * Gets the Game Stats
+   *
+   * @param {*} args args
+   */
+  getGameStatistics$({ args }, authToken) {
+    const { filterInput } = args;
+
+    return GameDA.getGamesToCalcStats$(filterInput).pipe(
+      reduce((acc, game) => {
+        acc.totalGames = (acc.totalGames || 0) + 1;
+        // Extract numeric value from storage string (e.g., "3 GB" -> 3)
+        let storageValue = 0;
+        if (game.minimum_system_requirements && typeof game.minimum_system_requirements.storage === 'string') {
+          const match = game.minimum_system_requirements.storage.match(/(\d+)/);
+          if (match) {
+            storageValue = parseInt(match[1], 10);
+          }
+        }
+        acc.averageMetascore = (acc.averageMetascore || 0) + storageValue;
+        acc.gamesByGenre = acc.gamesByGenre || {};
+        acc.gamesByGenre[game.genre] = (acc.gamesByGenre[game.genre] || 0) + 1;
+        return acc;
+      }, { totalGames: 0, averageMetascore: 0, gamesByGenre: {} }),
+      map(stats => {
+        stats.averageMetascore = stats.totalGames > 0 ? stats.averageMetascore / stats.totalGames : 0;
+        return stats;
+      }),
       mergeMap(rawResponse => CqrsResponseHelper.buildSuccessResponse$(rawResponse)),
       catchError(err => iif(() => err.name === 'MongoTimeoutError', throwError(err), CqrsResponseHelper.handleError$(err)))
     );
@@ -130,11 +165,11 @@ class GameCRUD {
 
       //tap(game => ConsoleLogger.i(`Parsed item: ${JSON.stringify(game,null,1)}`)),
 
-      map(({id, title: name,short_description: description }) => ({ id: String(id), name, description, active: true, organizationId: authToken.organizationId })),
+      map(({ id, title: name, short_description: description, ...otherProps }) => ({ id: String(id), name, description, active: true, organizationId: authToken.organizationId, ...otherProps })),
       mergeMap(game => GameDA.createGame$(game.id, game, authToken.preferred_username)),
       mergeMap(game => eventSourcing.emitEvent$(instance.buildAggregateMofifiedEvent('CREATE', 'Game', game.id, authToken, game), { autoAcknowledgeKey: process.env.MICROBACKEND_KEY })),
       toArray(),
-      map((array)=> ({code: array.length, message:'ok'})),
+      map((array) => ({ code: array.length, message: 'ok' })),
       mergeMap(aggregate => forkJoin(
         CqrsResponseHelper.buildSuccessResponse$(aggregate),
       )),

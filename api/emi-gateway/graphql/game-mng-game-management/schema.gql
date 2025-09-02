@@ -65,6 +65,12 @@ type GameMngGameListing {
   queryTotalResultCount: Int,  
 }
 
+type GameMngGameStatistics {
+  totalGames: Int!
+  averageMetascore: Float!
+  gamesByGenre: JSON!
+}
+
 
 input GameMngGameFilterInput {
   "Name"
@@ -107,6 +113,8 @@ input GameMngGameImportInput {
 type Query {
   "Get Games filtered "
   GameMngGameListing(filterInput: GameMngGameFilterInput, paginationInput: GameMngGamePaginationInput, sortInput: GameMngGameSortInput): GameMngGameListing
+  "Get Games filtered "
+  GameMngGameStatistics(filterInput: GameMngGameFilterInput): GameMngGameStatistics
   "Get Game by its id"
   GameMngGame(id: ID!, organizationId: String!): GameMngGame
   "Get Game by its id"
