@@ -115,10 +115,10 @@ class GameDA {
         metadata
       }
     }, {
-      upsert: true
+      upsert: true,
     }
     )).pipe(
-      map(({ insertedId }) => ({ id: insertedId, ...properties, metadata }))
+      map(() => ({ id: _id, ...properties, metadata } ))
     );
   }
 
