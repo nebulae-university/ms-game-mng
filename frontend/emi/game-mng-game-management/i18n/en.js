@@ -26,7 +26,8 @@ export default {
     filters: {
       title: "Filters",
       active: "Active"
-    }
+    },
+    high_performance: 'High Performance'
   },
   game: {
     games: 'Games',

@@ -1,8 +1,9 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState} from 'react';
 import {FusePageCarded} from '@fuse';
 import { useSelector } from 'react-redux';
 import withReducer from 'app/store/withReducer';
 import GamesTable from './GamesTable';
+import HighPerformanceTable from './HighPerformanceTable';
 import GamesHeader from './GamesHeader';
 import reducer from '../store/reducers';
 import {FuseLoading} from '@fuse';
@@ -14,6 +15,7 @@ function Games()
 {
     const user = useSelector(({ auth }) => auth.user);
     const pageLayout = useRef(null);
+    const [tableType, setTableType] = useState('normal');
 
     
     if(!user.selectedOrganization){
@@ -28,10 +30,10 @@ function Games()
                 header: "min-h-72 h-72 sm:h-72 sm:min-h-72" // short header always
             }}
             header={
-                <GamesHeader pageLayout={pageLayout} />
+                <GamesHeader pageLayout={pageLayout} onTableTypeChange={setTableType} tableType={tableType} />
             }
             content={
-                <GamesTable/>
+                tableType === 'normal' ? <GamesTable/> : <HighPerformanceTable/>
             }
 
             leftSidebarHeader={

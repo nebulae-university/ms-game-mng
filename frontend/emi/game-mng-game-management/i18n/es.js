@@ -26,7 +26,8 @@ export default {
     filters: {
       title: "Filtros",
       active: "Activo"
-    }
+    },
+    high_performance: 'Alto Rendimiento'
   },
   game: {
     games: 'Games',
