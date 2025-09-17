@@ -1,8 +1,8 @@
 "use strict";
 
 const uuidv4 = require("uuid/v4");
-const { of, forkJoin, from, iif, throwError } = require("rxjs");
-const { mergeMap, catchError, map, toArray, pluck, tap, last, reduce } = require('rxjs/operators');
+const { of, forkJoin, from, iif, throwError, concat } = require("rxjs");
+const { mergeMap, catchError, map, toArray, pluck, tap, last, reduce, concatMap, delay } = require('rxjs/operators');
 
 const Event = require("@nebulae/event-store").Event;
 const { CqrsResponseHelper } = require('@nebulae/backend-node-tools').cqrs;;
@@ -163,16 +163,28 @@ class GameCRUD {
 
     return FeedParser.parseFeed$(GAME_FEED_URL).pipe(
 
-      //tap(game => ConsoleLogger.i(`Parsed item: ${JSON.stringify(game,null,1)}`)),
-
+      // query  games
       map(({ id, title: name, short_description: description, ...otherProps }) => ({ id: String(id), name, description, active: true, organizationId: authToken.organizationId, ...otherProps })),
-      mergeMap(game => GameDA.createGame$(game.id, game, authToken.preferred_username)),
-      mergeMap(game => eventSourcing.emitEvent$(instance.buildAggregateMofifiedEvent('CREATE', 'Game', game.id, authToken, game), { autoAcknowledgeKey: process.env.MICROBACKEND_KEY })),
-      toArray(),
-      map((array) => ({ code: array.length, message: 'ok' })),
-      mergeMap(aggregate => forkJoin(
-        CqrsResponseHelper.buildSuccessResponse$(aggregate),
+      // generate 100 copies of each game with unique ids and names
+      mergeMap(game => from( 
+         Array(100).fill(game)
+        .map((game,index) => ({ ...game, id: `${game.id}-${index}`, name: `${game.name} - copy ${index}`}))
       )),
+      // create game and emit events
+      concatMap(game => forkJoin([
+        GameDA.createGame$(game.id, game, authToken.preferred_username),        
+        eventSourcing.emitEvent$(instance.buildAggregateMofifiedEvent('CREATE', 'Game', game.id, authToken, game), { autoAcknowledgeKey: process.env.MICROBACKEND_KEY }),
+        broker.send$(MATERIALIZED_VIEW_TOPIC, `GameMngGameModified`, game),
+      ]).pipe(
+        //delay(30) // slight delay to avoid overwhelming the websocket,
+      )),
+      // wait for all to complete
+      toArray(),
+      // create a success response
+      map((array) => ({ code: array.length, message: 'ok' })),
+      // build the success response
+      mergeMap(aggregate => CqrsResponseHelper.buildSuccessResponse$(aggregate)),
+      // handle errors
       map(([sucessResponse]) => sucessResponse),
       catchError(err => iif(() => err.name === 'MongoTimeoutError', throwError(err), CqrsResponseHelper.handleError$(err)))
     );

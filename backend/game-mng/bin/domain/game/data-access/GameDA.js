@@ -67,13 +67,13 @@ class GameDA {
       .skip(count * page)
       .limit(count);
 
-    const sort = {};
-    if (sortInput) {
-      sort[sortInput.field] = sortInput.asc ? 1 : -1;
-    } else {
-      sort["metadata.createdAt"] = -1;
-    }
-    cursor = cursor.sort(sort);
+    // const sort = {};
+    // if (sortInput) {
+    //   sort[sortInput.field] = sortInput.asc ? 1 : -1;
+    // } else {
+    //   sort["metadata.createdAt"] = -1;
+    // }
+    // cursor = cursor.sort(sort);
 
 
     return mongoDB.extractAllFromMongoCursor$(cursor).pipe(

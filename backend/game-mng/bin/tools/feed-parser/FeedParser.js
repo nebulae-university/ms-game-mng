@@ -51,7 +51,7 @@ class FeedParserClass {
 
 
     static fetchGameDetailById$(feed, id) {
-        const timeout$ = timer(500).pipe(
+        const timeout$ = timer(2000).pipe(
             tap(() => {
                 throw new CustomError(
                     'GameFetchingTimeout',
@@ -63,9 +63,7 @@ class FeedParserClass {
         );
         const fetching$ = fetch(`${feed}?id=${id}`).then(res => res.json());
         return race(timeout$, fetching$).pipe(
-            retry(3),
-
-            
+            retry(3),            
             catchError(err => {
                 console.error(`Error fetching game details for ID ${id}: ${err.message}`);
                 return of(null);
